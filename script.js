@@ -1,30 +1,47 @@
 let tournamentData = [];
-let gekozenGame = "Normaal"; // Onthoudt welke game is gekozen
+let gekozenGame = "Normaal";
+
+const POLYTOPIA_MANNETJES = ["Xin-Xi", "Imperius", "Bardur", "Oumaji"];
+const POLYTOPIA_MAPS = ["Dryland", "Lake", "Continents", "Pangea", "Archipelago", "Water World"];
 
 function kiesGame(game) {
     gekozenGame = game;
-    
-    // Pas titels dynamisch aan op basis van keuze
     if (gekozenGame === "Polytopia") {
         document.getElementById('main-title').innerText = "👑 Polytopia Tournament";
-        document.getElementById('player-input').placeholder = "Bardur, Imperius, Oumaji, Kickoo...";
+        document.getElementById('player-input').placeholder = "Senne, Milan, Thomas, Ruben...";
     } else {
         document.getElementById('main-title').innerText = "🏆 Tournament Generator";
         document.getElementById('player-input').placeholder = "Senne, Milan, Thomas, Ruben...";
     }
-
-    // Wissel van kaart naar het spelers invoerscherm
     document.getElementById('game-card').classList.add('hidden');
     document.getElementById('setup-card').classList.remove('hidden');
 }
 
 function terugNaarMenu() {
-    // Reset titel
     document.getElementById('main-title').innerText = "🏆 Tournament Generator";
-    
-    // Wissel terug naar hoofdscherm
     document.getElementById('game-card').classList.remove('hidden');
     document.getElementById('setup-card').classList.add('hidden');
+}
+
+// Hulpopruiming om willekeurige items te pakken
+function getRandomItem(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// Genereert 3 unieke settings voor de Best of 3
+function genereerPolytopiaBo3() {
+    let bo3Games = [];
+    for (let i = 1; i <= 3; i++) {
+        let map = getRandomItem(POLYTOPIA_MAPS);
+        // Zorg dat speler 1 en speler 2 niet hetzelfde mannetje hebben
+        let m1 = getRandomItem(POLYTOPIA_MANNETJES);
+        let m2 = getRandomItem(POLYTOPIA_MANNETJES);
+        while (m1 === m2) {
+            m2 = getRandomItem(POLYTOPIA_MANNETJES);
+        }
+        bo3Games.push({ nr: i, map: map, p1Mannetje: m1, p2Mannetje: m2 });
+    }
+    return bo3Games;
 }
 
 function startTournament() {
@@ -49,7 +66,9 @@ function startTournament() {
         let matchCount = bracketSize / Math.pow(2, r + 1);
         let roundMatches = [];
         for (let m = 0; m < matchCount; m++) {
-            roundMatches.push({ player1: null, player2: null, winner: null });
+            // Sla nu ook de Bo3 data op als we Polytopia spelen
+            let bo3Data = (gekozenGame === "Polytopia") ? genereerPolytopiaBo3() : null;
+            roundMatches.push({ player1: null, player2: null, winner: null, bo3: bo3Data });
         }
         tournamentData.push(roundMatches);
     }
@@ -65,7 +84,6 @@ function startTournament() {
 
     berekenToernooiLogica();
 
-    // Update de titel boven de bracket
     if (gekozenGame === "Polytopia") {
         document.getElementById('bracket-title').innerText = "⚔️ Battle for the Square";
     } else {
@@ -80,11 +98,9 @@ function startTournament() {
 
 function berekenToernooiLogica() {
     let totalRounds = tournamentData.length;
-
     for (let r = 0; r < totalRounds; r++) {
         for (let m = 0; m < tournamentData[r].length; m++) {
             let match = tournamentData[r][m];
-
             if (match.winner) {
                 stuurDoorNaarVolgendeRonde(r, m, match.winner);
             } 
@@ -110,7 +126,6 @@ function stuurDoorNaarVolgendeRonde(roundIndex, matchIndex, winnerName) {
     if (roundIndex < tournamentData.length - 1) {
         const nextRoundIndex = roundIndex + 1;
         const nextMatchIndex = Math.floor(matchIndex / 2);
-        
         if (matchIndex % 2 === 0) {
             tournamentData[nextRoundIndex][nextMatchIndex].player1 = winnerName;
         } else {
@@ -137,14 +152,11 @@ function selectWinner(roundIndex, matchIndex, winnerName) {
 
 function toonWinnaarPopup(naam) {
     document.getElementById('champion-name').innerText = naam;
-    
-    // Speciale overwinningsboodschap voor Polytopia
     if (gekozenGame === "Polytopia") {
-        document.getElementById('winner-text').innerText = "Gefeliciteerd! Jij hebt het Square veroverd en regeert over alle stammen! 🌌";
+        document.getElementById('winner-text').innerText = "Gefeliciteerd! Je hebt de Best of 3 gewonnen, het Square veroverd en heerst over alle stammen! 🌌";
     } else {
         document.getElementById('winner-text').innerText = "Gefeliciteerd! Jij bent de absolute koning van het toernooi.";
     }
-    
     document.getElementById('winner-overlay').classList.remove('hidden');
 }
 
@@ -156,7 +168,6 @@ function wisOudeWinnaarInVolgendeRondes(startRound, naamOmTeWissen) {
     for (let r = startRound; r < tournamentData.length; r++) {
         for (let m = 0; m < tournamentData[r].length; m++) {
             let match = tournamentData[r][m];
-            
             if (match.player1 === naamOmTeWissen) { match.player1 = null; match.winner = null; }
             if (match.player2 === naamOmTeWissen) { match.player2 = null; match.winner = null; }
             if (match.winner === naamOmTeWissen) { match.winner = null; }
@@ -189,6 +200,22 @@ function renderBracket() {
 
             const matchDiv = document.createElement('div');
             matchDiv.classList.add('match');
+
+            // VOEG DE BEST OF 3 MAPS EN MANNETJES TOE (alleen bij Polytopia en als beide spelers bekend zijn en geen Free Pass)
+            if (gekozenGame === "Polytopia" && match.player1 && match.player2 && match.player1 !== "Free Pass 🌟" && match.player2 !== "Free Pass 🌟") {
+                const bo3Box = document.createElement('div');
+                bo3Box.classList.add('polytopia-bo3-box');
+                bo3Box.innerHTML = `<div class="bo3-title">🗺️ Best of 3 Schema:</div>`;
+                
+                match.bo3.forEach(g => {
+                    bo3Box.innerHTML += `
+                        <div class="bo3-game">
+                            <strong>Game ${g.nr}:</strong> ${g.map} <br>
+                            <span style="color:#f59e0b">${match.player1}</span> (${g.p1Mannetje}) vs <span style="color:#f59e0b">${match.player2}</span> (${g.p2Mannetje})
+                        </div>`;
+                });
+                matchDiv.appendChild(bo3Box);
+            }
 
             const p1Slot = createPlayerSlot(match.player1, match.winner, () => selectWinner(roundIndex, matchIndex, match.player1));
             const p2Slot = createPlayerSlot(match.player2, match.winner, () => selectWinner(roundIndex, matchIndex, match.player2));
@@ -236,8 +263,6 @@ function resetTournament() {
     document.getElementById('player-input').value = '';
     document.getElementById('bracket-card').classList.add('hidden');
     document.getElementById('setup-card').classList.add('hidden');
-    
-    // Stuur de speler helemaal terug naar het hoofdscherm
     document.getElementById('game-card').classList.remove('hidden');
     document.getElementById('main-title').innerText = "🏆 Tournament Generator";
 }
