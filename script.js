@@ -1,4 +1,31 @@
 let tournamentData = [];
+let gekozenGame = "Normaal"; // Onthoudt welke game is gekozen
+
+function kiesGame(game) {
+    gekozenGame = game;
+    
+    // Pas titels dynamisch aan op basis van keuze
+    if (gekozenGame === "Polytopia") {
+        document.getElementById('main-title').innerText = "👑 Polytopia Tournament";
+        document.getElementById('player-input').placeholder = "Bardur, Imperius, Oumaji, Kickoo...";
+    } else {
+        document.getElementById('main-title').innerText = "🏆 Tournament Generator";
+        document.getElementById('player-input').placeholder = "Senne, Milan, Thomas, Ruben...";
+    }
+
+    // Wissel van kaart naar het spelers invoerscherm
+    document.getElementById('game-card').classList.add('hidden');
+    document.getElementById('setup-card').classList.remove('hidden');
+}
+
+function terugNaarMenu() {
+    // Reset titel
+    document.getElementById('main-title').innerText = "🏆 Tournament Generator";
+    
+    // Wissel terug naar hoofdscherm
+    document.getElementById('game-card').classList.remove('hidden');
+    document.getElementById('setup-card').classList.add('hidden');
+}
 
 function startTournament() {
     const input = document.getElementById('player-input').value;
@@ -37,6 +64,13 @@ function startTournament() {
     }
 
     berekenToernooiLogica();
+
+    // Update de titel boven de bracket
+    if (gekozenGame === "Polytopia") {
+        document.getElementById('bracket-title').innerText = "⚔️ Battle for the Square";
+    } else {
+        document.getElementById('bracket-title').innerText = "Toernooi Schema";
+    }
 
     document.getElementById('setup-card').classList.add('hidden');
     document.getElementById('bracket-card').classList.remove('hidden');
@@ -103,6 +137,14 @@ function selectWinner(roundIndex, matchIndex, winnerName) {
 
 function toonWinnaarPopup(naam) {
     document.getElementById('champion-name').innerText = naam;
+    
+    // Speciale overwinningsboodschap voor Polytopia
+    if (gekozenGame === "Polytopia") {
+        document.getElementById('winner-text').innerText = "Gefeliciteerd! Jij hebt het Square veroverd en regeert over alle stammen! 🌌";
+    } else {
+        document.getElementById('winner-text').innerText = "Gefeliciteerd! Jij bent de absolute koning van het toernooi.";
+    }
+    
     document.getElementById('winner-overlay').classList.remove('hidden');
 }
 
@@ -192,6 +234,10 @@ function createPlayerSlot(playerName, winnerName, clickEvent) {
 function resetTournament() {
     sluitWinnaarPopup();
     document.getElementById('player-input').value = '';
-    document.getElementById('setup-card').classList.remove('hidden');
     document.getElementById('bracket-card').classList.add('hidden');
+    document.getElementById('setup-card').classList.add('hidden');
+    
+    // Stuur de speler helemaal terug naar het hoofdscherm
+    document.getElementById('game-card').classList.remove('hidden');
+    document.getElementById('main-title').innerText = "🏆 Tournament Generator";
 }
