@@ -9,12 +9,12 @@
 <body>
 
     <div class="app-container">
-        <h1>🏆 VUB Tourney</h1>
+        <h1>🏆 Tournament Generator</h1>
         
         <div id="setup-card" class="card">
             <h2>Spelers Toevoegen</h2>
             <p class="subtitle">Voer 3 tot 16 namen in (gescheiden door komma's)</p>
-            <textarea id="player-input" placeholder="Speler 1, Speler 2, Speler 3, Speler 4..."></textarea>
+            <textarea id="player-input" placeholder="Senne, Milan, Thomas, Ruben..."></textarea>
             <button id="start-btn" onclick="startTournament()">Start Toernooi</button>
         </div>
 
@@ -27,6 +27,20 @@
         </div>
     </div>
 
-    <script src="script.js?v=4"></script>
+    <div id="winner-overlay" class="overlay hidden">
+        <div class="winner-card">
+            <div class="confetti">🎉🥳🎉🥳🎉</div>
+            <h2>WE HEBBEN EEN WINNAAR!</h2>
+            <div class="champion-badge">
+                <span class="big-crown">👑</span>
+                <h1 id="champion-name">NAAM</h1>
+            </div>
+            <p>Gefeliciteerd! Jij bent de absolute koning van het toernooi.</p>
+            <button class="celebrate-btn" onclick="sluitWinnaarPopup()">Bekijk Bracket</button>
+            <button class="restart-btn" onclick="resetTournament()">Nieuw Toernooi</button>
+        </div>
+    </div>
+
+    <script src="script.js?v=5"></script>
 </body>
 </html>
