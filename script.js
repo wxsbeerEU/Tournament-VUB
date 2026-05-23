@@ -70,7 +70,6 @@ function startTournament() {
         let roundMatches = [];
         for (let m = 0; m < matchCount; m++) {
             let bo3Data = (gekozenGame === "Polytopia") ? genereerUniekePolytopiaBo3() : null;
-            // Rollo Rush krijgt extra velden voor scores
             roundMatches.push({ 
                 player1: null, 
                 player2: null, 
@@ -146,9 +145,8 @@ function stuurDoorNaarVolgendeRonde(roundIndex, matchIndex, winnerName) {
     }
 }
 
-// Wordt aangeroepen als er handmatig geklikt wordt (Normaal/Polytopia)
 function selectWinner(roundIndex, matchIndex, winnerName) {
-    if (gekozenGame === "Rollo Rush") return; // Rollo Rush gebruikt score-invoer in plaats van kliks
+    if (gekozenGame === "Rollo Rush") return; 
 
     let oudeWinnaar = tournamentData[roundIndex][matchIndex].winner;
     tournamentData[roundIndex][matchIndex].winner = winnerName;
@@ -165,7 +163,6 @@ function selectWinner(roundIndex, matchIndex, winnerName) {
     }
 }
 
-// Speciaal voor Rollo Rush: update score live en bereken winnaar
 function updateScore(roundIndex, matchIndex, playerNum, value) {
     let match = tournamentData[roundIndex][matchIndex];
     let oudeWinnaar = match.winner;
@@ -176,14 +173,13 @@ function updateScore(roundIndex, matchIndex, playerNum, value) {
     let s1 = parseFloat(match.score1);
     let s2 = parseFloat(match.score2);
 
-    // Alleen een winnaar bepalen als beide scores fatsoenlijk zijn ingevoerd
     if (!isNaN(s1) && !isNaN(s2)) {
         if (s1 > s2) {
             match.winner = match.player1;
         } else if (s2 > s1) {
             match.winner = match.player2;
         } else {
-            match.winner = null; // Gelijkspel = nog geen winnaar doorsturen
+            match.winner = null; 
         }
     } else {
         match.winner = null;
@@ -195,9 +191,6 @@ function updateScore(roundIndex, matchIndex, playerNum, value) {
 
     berekenToernooiLogica();
     
-    // Alleen her-renderen als we niet focussen op de huidige input om verspringen te voorkomen
-    // We herberekenen de complete logica op de achtergrond.
-    // Om te zorgen dat de volgende rondes live updaten:
     setTimeout(() => {
         let activeId = document.activeElement.id;
         renderBracket();
@@ -205,7 +198,6 @@ function updateScore(roundIndex, matchIndex, playerNum, value) {
             let el = document.getElementById(activeId);
             if (el) {
                 el.focus();
-                // Zet cursor aan het einde
                 let val = el.value;
                 el.value = '';
                 el.value = val;
@@ -213,9 +205,7 @@ function updateScore(roundIndex, matchIndex, playerNum, value) {
         }
     }, 50);
 
-    // Check finale winnaar direct
     if (roundIndex === tournamentData.length - 1 && match.winner && match.winner !== "Free Pass 🌟" && !oudeWinnaar) {
-        // Vertraging zodat de popup niet direct de typering onderbreekt
         setTimeout(() => {
             if (tournamentData[roundIndex][matchIndex].winner === match.winner) {
                 toonWinnaarPopup(match.winner);
@@ -321,7 +311,6 @@ function createPlayerSlot(playerName, winnerName, clickEvent, roundIndex, matchI
         return slot;
     }
 
-    // Naam gedeelte
     const nameSpan = document.createElement('span');
     nameSpan.innerText = playerName || "Nog onbekend";
     slot.appendChild(nameSpan);
@@ -335,6 +324,30 @@ function createPlayerSlot(playerName, winnerName, clickEvent, roundIndex, matchI
         }
     }
 
-    // Als we Rollo Rush spelen en de speler is bekend, voeg dan een input toe voor de afstand/score
     if (gekozenGame === "Rollo Rush" && playerName && playerName !== "Nog onbekend") {
-        const scoreInput = document.createElement('
+        const scoreInput = document.createElement('input');
+        scoreInput.type = "number";
+        scoreInput.id = `score-${roundIndex}-${matchIndex}-${playerNum}`;
+        scoreInput.classList.add('score-input');
+        scoreInput.placeholder = "Score";
+        scoreInput.value = scoreValue || "";
+        
+        scoreInput.onclick = (e) => e.stopPropagation();
+        scoreInput.oninput = (e) => updateScore(roundIndex, matchIndex, playerNum, e.target.value);
+        
+        slot.appendChild(scoreInput);
+    } else if (gekozenGame !== "Rollo Rush" && playerName && playerName !== "Nog onbekend") {
+        slot.onclick = clickEvent;
+    }
+
+    return slot;
+}
+
+function resetTournament() {
+    sluitWinnaarPopup();
+    document.getElementById('player-input').value = '';
+    document.getElementById('bracket-card').classList.add('hidden');
+    document.getElementById('setup-card').classList.add('hidden');
+    document.getElementById('game-card').classList.remove('hidden');
+    document.getElementById('main-title').innerText = "🏆 Tournament Generator";
+}
