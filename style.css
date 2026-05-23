@@ -46,19 +46,17 @@ h1 {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* FIX: Meer ruimte in de header van kaarten */
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px; /* Meer ruimte onder de titel/knop */
+    margin-bottom: 15px;
 }
 
 .card-header h2 {
     margin: 0;
 }
 
-/* FIX: Meer ademruimte voor de terugknop */
 .back-btn {
     width: auto;
     margin: 0;
@@ -71,7 +69,7 @@ h1 {
     font-size: 0.85rem;
     color: var(--text-muted);
     margin-top: 5px;
-    margin-bottom: 20px; /* Meer ruimte onder de subtitel */
+    margin-bottom: 20px;
 }
 
 .game-options {
@@ -106,7 +104,6 @@ h1 {
     border: 1px solid #64748b;
 }
 
-/* FIX: Ruimte tussen textarea en startknop */
 textarea {
     width: 100%;
     height: 90px;
@@ -118,7 +115,7 @@ textarea {
     font-size: 1rem;
     resize: none;
     box-sizing: border-box;
-    margin-bottom: 10px; /* Ruimte onder textarea */
+    margin-bottom: 10px;
 }
 
 button {
@@ -205,27 +202,68 @@ button:active { transform: scale(0.98); }
 .player-slot.loser { opacity: 0.35; }
 .crown { font-size: 1.1rem; }
 
-/* POLYTOPIA BEST OF 3 GENERATOR STYLING */
+/* 🌟 UPGRADE: RELESTYLDE POLYTOPIA BEST OF 3 BOX */
 .polytopia-bo3-box {
-    background: rgba(15, 23, 42, 0.4);
-    padding: 10px 15px;
-    font-size: 0.8rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--text-muted);
+    background: #111827; /* Diep donkere achtergrond voor contrast */
+    padding: 14px;
+    border-bottom: 2px solid #1f2937;
 }
 
 .bo3-title {
-    font-weight: bold;
-    color: #0ea5e9;
-    margin-bottom: 4px;
+    font-weight: 800;
+    color: #38bdf8;
+    margin-bottom: 10px;
     text-transform: uppercase;
     font-size: 0.75rem;
+    letter-spacing: 1px;
 }
 
 .bo3-game {
-    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    background: #1f2937;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    border-left: 3px solid #0284c7; /* Blauwe indicatorlijn */
 }
-.bo3-game:last-child { margin-bottom: 0; }
+
+.bo3-game:last-child {
+    margin-bottom: 0;
+}
+
+.game-number {
+    font-weight: 800;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    margin-right: 12px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.game-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.map-text {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.tribe-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.tribe-text strong {
+    color: #f59e0b; /* Goud voor de stamnaam */
+}
 
 /* Pop-up Info */
 .overlay {
