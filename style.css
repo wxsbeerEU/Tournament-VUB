@@ -296,3 +296,38 @@ button:active { transform: scale(0.98); }
 #champion-name { margin: 10px 0 0 0; font-size: 2.2rem; color: white; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
 .celebrate-btn { background: #475569; margin-top: 20px; }
 .restart-btn { background: var(--accent-gradient); margin-top: 10px; }
+
+/* VOEG DIT TOE ONDERAAN JE STYLE.CSS VOOR DE ROLLO RUSH SCORE INPUTS */
+.score-input {
+    width: 70px;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: white;
+    padding: 6px 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 6px;
+    text-align: center;
+    box-sizing: border-box;
+    -moz-appearance: textfield;
+}
+
+/* Haal de standaard pijltjes van nummer-inputs weg voor een strakkere look */
+.score-input::-webkit-outer-spin-button,
+.score-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.score-input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    background: #1e293b;
+}
+
+/* Zorg dat de player-slot flex-layout de naam links houdt en de input rechts */
+.player-slot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
