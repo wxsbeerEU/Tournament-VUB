@@ -8,10 +8,13 @@ function kiesGame(game) {
     gekozenGame = game;
     if (gekozenGame === "Polytopia") {
         document.getElementById('main-title').innerText = "👑 Polytopia Tournament";
-        document.getElementById('player-input').placeholder = "Speler 1, Speler 2, Speler 3, Speler 4...";
+        document.getElementById('player-input').placeholder = "Senne, Milan, Thomas, Ruben...";
+    } else if (gekozenGame === "Rollo Rush") {
+        document.getElementById('main-title').innerText = "🦔 Rollo Rush Arena";
+        document.getElementById('player-input').placeholder = "Senne, Milan, Thomas, Ruben...";
     } else {
         document.getElementById('main-title').innerText = "🏆 Tournament Generator";
-        document.getElementById('player-input').placeholder = "Speler 1, Speler 2, Speler 3, Speler 4...";
+        document.getElementById('player-input').placeholder = "Senne, Milan, Thomas, Ruben...";
     }
     document.getElementById('game-card').classList.add('hidden');
     document.getElementById('setup-card').classList.remove('hidden');
@@ -27,18 +30,15 @@ function getRandomItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Genereert een UNIEKE set van 3 games voor EEN SPECIFIEKE wedstrijd
 function genereerUniekePolytopiaBo3() {
     let bo3Games = [];
     let beschikbareMaps = [...POLYTOPIA_MAPS];
     let beschikbareStammen = [...POLYTOPIA_MANNETJES];
 
     for (let i = 1; i <= 3; i++) {
-        // Pak een willekeurige map en haal hem uit de pool zodat hij niet herhaald wordt
         let mapIndex = Math.floor(Math.random() * beschikbareMaps.length);
         let gekozenMap = beschikbareMaps.splice(mapIndex, 1)[0];
 
-        // Pak een willekeurige stam en haal hem uit de pool zodat hij niet herhaald wordt
         let stamIndex = Math.floor(Math.random() * beschikbareStammen.length);
         let gekozenStam = beschikbareStammen.splice(stamIndex, 1)[0];
 
@@ -69,9 +69,16 @@ function startTournament() {
         let matchCount = bracketSize / Math.pow(2, r + 1);
         let roundMatches = [];
         for (let m = 0; m < matchCount; m++) {
-            // Genereer ALTIJD een unieke set speciaal voor dit specifieke match-slot
             let bo3Data = (gekozenGame === "Polytopia") ? genereerUniekePolytopiaBo3() : null;
-            roundMatches.push({ player1: null, player2: null, winner: null, bo3: bo3Data });
+            // Rollo Rush krijgt extra velden voor scores
+            roundMatches.push({ 
+                player1: null, 
+                player2: null, 
+                score1: "", 
+                score2: "", 
+                winner: null, 
+                bo3: bo3Data 
+            });
         }
         tournamentData.push(roundMatches);
     }
@@ -89,6 +96,8 @@ function startTournament() {
 
     if (gekozenGame === "Polytopia") {
         document.getElementById('bracket-title').innerText = "⚔️ Battle for the Square";
+    } else if (gekozenGame === "Rollo Rush") {
+        document.getElementById('bracket-title').innerText = "🦔 Rollo Rush Distance Leaderboard";
     } else {
         document.getElementById('bracket-title').innerText = "Toernooi Schema";
     }
@@ -137,7 +146,10 @@ function stuurDoorNaarVolgendeRonde(roundIndex, matchIndex, winnerName) {
     }
 }
 
+// Wordt aangeroepen als er handmatig geklikt wordt (Normaal/Polytopia)
 function selectWinner(roundIndex, matchIndex, winnerName) {
+    if (gekozenGame === "Rollo Rush") return; // Rollo Rush gebruikt score-invoer in plaats van kliks
+
     let oudeWinnaar = tournamentData[roundIndex][matchIndex].winner;
     tournamentData[roundIndex][matchIndex].winner = winnerName;
 
@@ -153,10 +165,71 @@ function selectWinner(roundIndex, matchIndex, winnerName) {
     }
 }
 
+// Speciaal voor Rollo Rush: update score live en bereken winnaar
+function updateScore(roundIndex, matchIndex, playerNum, value) {
+    let match = tournamentData[roundIndex][matchIndex];
+    let oudeWinnaar = match.winner;
+
+    if (playerNum === 1) match.score1 = value;
+    if (playerNum === 2) match.score2 = value;
+
+    let s1 = parseFloat(match.score1);
+    let s2 = parseFloat(match.score2);
+
+    // Alleen een winnaar bepalen als beide scores fatsoenlijk zijn ingevoerd
+    if (!isNaN(s1) && !isNaN(s2)) {
+        if (s1 > s2) {
+            match.winner = match.player1;
+        } else if (s2 > s1) {
+            match.winner = match.player2;
+        } else {
+            match.winner = null; // Gelijkspel = nog geen winnaar doorsturen
+        }
+    } else {
+        match.winner = null;
+    }
+
+    if (oudeWinnaar && oudeWinnaar !== match.winner) {
+        wisOudeWinnaarInVolgendeRondes(roundIndex + 1, oudeWinnaar);
+    }
+
+    berekenToernooiLogica();
+    
+    // Alleen her-renderen als we niet focussen op de huidige input om verspringen te voorkomen
+    // We herberekenen de complete logica op de achtergrond.
+    // Om te zorgen dat de volgende rondes live updaten:
+    setTimeout(() => {
+        let activeId = document.activeElement.id;
+        renderBracket();
+        if (activeId) {
+            let el = document.getElementById(activeId);
+            if (el) {
+                el.focus();
+                // Zet cursor aan het einde
+                let val = el.value;
+                el.value = '';
+                el.value = val;
+            }
+        }
+    }, 50);
+
+    // Check finale winnaar direct
+    if (roundIndex === tournamentData.length - 1 && match.winner && match.winner !== "Free Pass 🌟" && !oudeWinnaar) {
+        // Vertraging zodat de popup niet direct de typering onderbreekt
+        setTimeout(() => {
+            if (tournamentData[roundIndex][matchIndex].winner === match.winner) {
+                toonWinnaarPopup(match.winner);
+            }
+        }, 1000);
+    }
+}
+
 function toonWinnaarPopup(naam) {
     document.getElementById('champion-name').innerText = naam;
     if (gekozenGame === "Polytopia") {
         document.getElementById('winner-text').innerText = "Gefeliciteerd! Je hebt de Best of 3 gewonnen, het Square veroverd en heerst over alle stammen! 🌌";
+    } else if (gekozenGame === "Rollo Rush") {
+        document.getElementById('winner-text').innerText = "Gefeliciteerd! Met een legendarische afstand rol jij iedereen naar huis en ben je de absolute Rollo Rush Koning! 🦔⚡";
     } else {
         document.getElementById('winner-text').innerText = "Gefeliciteerd! Jij bent de absolute koning van het toernooi.";
     }
@@ -171,8 +244,8 @@ function wisOudeWinnaarInVolgendeRondes(startRound, naamOmTeWissen) {
     for (let r = startRound; r < tournamentData.length; r++) {
         for (let m = 0; m < tournamentData[r].length; m++) {
             let match = tournamentData[r][m];
-            if (match.player1 === naamOmTeWissen) { match.player1 = null; match.winner = null; }
-            if (match.player2 === naamOmTeWissen) { match.player2 = null; match.winner = null; }
+            if (match.player1 === naamOmTeWissen) { match.player1 = null; match.winner = null; match.score1 = ""; match.score2 = ""; }
+            if (match.player2 === naamOmTeWissen) { match.player2 = null; match.winner = null; match.score1 = ""; match.score2 = ""; }
             if (match.winner === naamOmTeWissen) { match.winner = null; }
         }
     }
@@ -204,7 +277,6 @@ function renderBracket() {
             const matchDiv = document.createElement('div');
             matchDiv.classList.add('match');
 
-            // Render de unieke Best of 3 Box voor deze specifieke wedstrijd
             if (gekozenGame === "Polytopia" && match.player1 && match.player2 && match.player1 !== "Free Pass 🌟" && match.player2 !== "Free Pass 🌟") {
                 const bo3Box = document.createElement('div');
                 bo3Box.classList.add('polytopia-bo3-box');
@@ -225,8 +297,8 @@ function renderBracket() {
                 matchDiv.appendChild(bo3Box);
             }
 
-            const p1Slot = createPlayerSlot(match.player1, match.winner, () => selectWinner(roundIndex, matchIndex, match.player1));
-            const p2Slot = createPlayerSlot(match.player2, match.winner, () => selectWinner(roundIndex, matchIndex, match.player2));
+            const p1Slot = createPlayerSlot(match.player1, match.winner, () => selectWinner(roundIndex, matchIndex, match.player1), roundIndex, matchIndex, 1, match.score1);
+            const p2Slot = createPlayerSlot(match.player2, match.winner, () => selectWinner(roundIndex, matchIndex, match.player2), roundIndex, matchIndex, 2, match.score2);
 
             matchDiv.appendChild(p1Slot);
             matchDiv.appendChild(p2Slot);
@@ -239,10 +311,9 @@ function renderBracket() {
     });
 }
 
-function createPlayerSlot(playerName, winnerName, clickEvent) {
+function createPlayerSlot(playerName, winnerName, clickEvent, roundIndex, matchIndex, playerNum, scoreValue) {
     const slot = document.createElement('div');
     slot.classList.add('player-slot');
-    slot.innerText = playerName || "Nog onbekend";
 
     if (playerName === "Free Pass 🌟") {
         slot.classList.add('loser');
@@ -250,27 +321,20 @@ function createPlayerSlot(playerName, winnerName, clickEvent) {
         return slot;
     }
 
+    // Naam gedeelte
+    const nameSpan = document.createElement('span');
+    nameSpan.innerText = playerName || "Nog onbekend";
+    slot.appendChild(nameSpan);
+
     if (playerName && winnerName) {
         if (playerName === winnerName) {
             slot.classList.add('winner');
-            slot.innerHTML = `<span>${playerName}</span> <span class="crown">👑</span>`;
+            nameSpan.innerHTML = `${playerName} <span class="crown">👑</span>`;
         } else {
             slot.classList.add('loser');
         }
     }
 
-    if (playerName && playerName !== "Nog onbekend") {
-        slot.onclick = clickEvent;
-    }
-
-    return slot;
-}
-
-function resetTournament() {
-    sluitWinnaarPopup();
-    document.getElementById('player-input').value = '';
-    document.getElementById('bracket-card').classList.add('hidden');
-    document.getElementById('setup-card').classList.add('hidden');
-    document.getElementById('game-card').classList.remove('hidden');
-    document.getElementById('main-title').innerText = "🏆 Tournament Generator";
-}
+    // Als we Rollo Rush spelen en de speler is bekend, voeg dan een input toe voor de afstand/score
+    if (gekozenGame === "Rollo Rush" && playerName && playerName !== "Nog onbekend") {
+        const scoreInput = document.createElement('
