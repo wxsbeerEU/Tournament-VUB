@@ -23,23 +23,33 @@ function terugNaarMenu() {
     document.getElementById('setup-card').classList.add('hidden');
 }
 
-// Hulpopruiming om willekeurige items te pakken
 function getRandomItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Genereert 3 unieke settings voor de Best of 3
+// Genereert 3 games waarbij BEIDE spelers dezelfde stam krijgen
 function genereerPolytopiaBo3() {
     let bo3Games = [];
+    let gebruikteMaps = [];
+    let gebruikteStammen = [];
+
     for (let i = 1; i <= 3; i++) {
+        // Kies een unieke map voor deze Bo3 indien mogelijk
         let map = getRandomItem(POLYTOPIA_MAPS);
-        // Zorg dat speler 1 en speler 2 niet hetzelfde mannetje hebben
-        let m1 = getRandomItem(POLYTOPIA_MANNETJES);
-        let m2 = getRandomItem(POLYTOPIA_MANNETJES);
-        while (m1 === m2) {
-            m2 = getRandomItem(POLYTOPIA_MANNETJES);
+        while (gebruikteMaps.includes(map) && gebruikteMaps.length < POLYTOPIA_MAPS.length) {
+            map = getRandomItem(POLYTOPIA_MAPS);
         }
-        bo3Games.push({ nr: i, map: map, p1Mannetje: m1, p2Mannetje: m2 });
+        gebruikteMaps.push(map);
+
+        // Kies een unieke stam voor deze Bo3 indien mogelijk
+        let stam = getRandomItem(POLYTOPIA_MANNETJES);
+        while (gebruikteStammen.includes(stam) && gebruikteStammen.length < POLYTOPIA_MANNETJES.length) {
+            stam = getRandomItem(POLYTOPIA_MANNETJES);
+        }
+        gebruikteStammen.push(stam);
+
+        // Beide spelers krijgen dezelfde stam (Mirror Match)
+        bo3Games.push({ nr: i, map: map, stam: stam });
     }
     return bo3Games;
 }
@@ -66,7 +76,6 @@ function startTournament() {
         let matchCount = bracketSize / Math.pow(2, r + 1);
         let roundMatches = [];
         for (let m = 0; m < matchCount; m++) {
-            // Sla nu ook de Bo3 data op als we Polytopia spelen
             let bo3Data = (gekozenGame === "Polytopia") ? genereerPolytopiaBo3() : null;
             roundMatches.push({ player1: null, player2: null, winner: null, bo3: bo3Data });
         }
@@ -201,19 +210,24 @@ function renderBracket() {
             const matchDiv = document.createElement('div');
             matchDiv.classList.add('match');
 
-            // VOEG DE BEST OF 3 MAPS EN MANNETJES TOE (alleen bij Polytopia en als beide spelers bekend zijn en geen Free Pass)
+            // MOOIE NIEUWE LAYOUT VOOR DE BEST OF 3 BOX
             if (gekozenGame === "Polytopia" && match.player1 && match.player2 && match.player1 !== "Free Pass 🌟" && match.player2 !== "Free Pass 🌟") {
                 const bo3Box = document.createElement('div');
                 bo3Box.classList.add('polytopia-bo3-box');
-                bo3Box.innerHTML = `<div class="bo3-title">🗺️ Best of 3 Schema:</div>`;
                 
+                let gamesHTML = `<div class="bo3-title">⚔️ Best of 3 Setup</div>`;
                 match.bo3.forEach(g => {
-                    bo3Box.innerHTML += `
+                    gamesHTML += `
                         <div class="bo3-game">
-                            <strong>Game ${g.nr}:</strong> ${g.map} <br>
-                            <span style="color:#f59e0b">${match.player1}</span> (${g.p1Mannetje}) vs <span style="color:#f59e0b">${match.player2}</span> (${g.p2Mannetje})
+                            <span class="game-number">G${g.nr}</span>
+                            <div class="game-details">
+                                <span class="map-text">🗺️ ${g.map}</span>
+                                <span class="tribe-text">👥 Beide spelers: <strong>${g.stam}</strong></span>
+                            </div>
                         </div>`;
                 });
+                
+                bo3Box.innerHTML = gamesHTML;
                 matchDiv.appendChild(bo3Box);
             }
 
