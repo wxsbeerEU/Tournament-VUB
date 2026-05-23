@@ -8,10 +8,10 @@ function kiesGame(game) {
     gekozenGame = game;
     if (gekozenGame === "Polytopia") {
         document.getElementById('main-title').innerText = "👑 Polytopia Tournament";
-        document.getElementById('player-input').placeholder = "Senne, Milan, Thomas, Ruben...";
+        document.getElementById('player-input').placeholder = "Speler 1, Speler 2, Speler 3, Speler 4...";
     } else {
         document.getElementById('main-title').innerText = "🏆 Tournament Generator";
-        document.getElementById('player-input').placeholder = "Senne, Milan, Thomas, Ruben...";
+        document.getElementById('player-input').placeholder = "Speler 1, Speler 2, Speler 3, Speler 4...";
     }
     document.getElementById('game-card').classList.add('hidden');
     document.getElementById('setup-card').classList.remove('hidden');
