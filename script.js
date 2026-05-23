@@ -27,29 +27,22 @@ function getRandomItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Genereert 3 games waarbij BEIDE spelers dezelfde stam krijgen
-function genereerPolytopiaBo3() {
+// Genereert een UNIEKE set van 3 games voor EEN SPECIFIEKE wedstrijd
+function genereerUniekePolytopiaBo3() {
     let bo3Games = [];
-    let gebruikteMaps = [];
-    let gebruikteStammen = [];
+    let beschikbareMaps = [...POLYTOPIA_MAPS];
+    let beschikbareStammen = [...POLYTOPIA_MANNETJES];
 
     for (let i = 1; i <= 3; i++) {
-        // Kies een unieke map voor deze Bo3 indien mogelijk
-        let map = getRandomItem(POLYTOPIA_MAPS);
-        while (gebruikteMaps.includes(map) && gebruikteMaps.length < POLYTOPIA_MAPS.length) {
-            map = getRandomItem(POLYTOPIA_MAPS);
-        }
-        gebruikteMaps.push(map);
+        // Pak een willekeurige map en haal hem uit de pool zodat hij niet herhaald wordt
+        let mapIndex = Math.floor(Math.random() * beschikbareMaps.length);
+        let gekozenMap = beschikbareMaps.splice(mapIndex, 1)[0];
 
-        // Kies een unieke stam voor deze Bo3 indien mogelijk
-        let stam = getRandomItem(POLYTOPIA_MANNETJES);
-        while (gebruikteStammen.includes(stam) && gebruikteStammen.length < POLYTOPIA_MANNETJES.length) {
-            stam = getRandomItem(POLYTOPIA_MANNETJES);
-        }
-        gebruikteStammen.push(stam);
+        // Pak een willekeurige stam en haal hem uit de pool zodat hij niet herhaald wordt
+        let stamIndex = Math.floor(Math.random() * beschikbareStammen.length);
+        let gekozenStam = beschikbareStammen.splice(stamIndex, 1)[0];
 
-        // Beide spelers krijgen dezelfde stam (Mirror Match)
-        bo3Games.push({ nr: i, map: map, stam: stam });
+        bo3Games.push({ nr: i, map: gekozenMap, stam: gekozenStam });
     }
     return bo3Games;
 }
@@ -76,7 +69,8 @@ function startTournament() {
         let matchCount = bracketSize / Math.pow(2, r + 1);
         let roundMatches = [];
         for (let m = 0; m < matchCount; m++) {
-            let bo3Data = (gekozenGame === "Polytopia") ? genereerPolytopiaBo3() : null;
+            // Genereer ALTIJD een unieke set speciaal voor dit specifieke match-slot
+            let bo3Data = (gekozenGame === "Polytopia") ? genereerUniekePolytopiaBo3() : null;
             roundMatches.push({ player1: null, player2: null, winner: null, bo3: bo3Data });
         }
         tournamentData.push(roundMatches);
@@ -210,7 +204,7 @@ function renderBracket() {
             const matchDiv = document.createElement('div');
             matchDiv.classList.add('match');
 
-            // MOOIE NIEUWE LAYOUT VOOR DE BEST OF 3 BOX
+            // Render de unieke Best of 3 Box voor deze specifieke wedstrijd
             if (gekozenGame === "Polytopia" && match.player1 && match.player2 && match.player1 !== "Free Pass 🌟" && match.player2 !== "Free Pass 🌟") {
                 const bo3Box = document.createElement('div');
                 bo3Box.classList.add('polytopia-bo3-box');
