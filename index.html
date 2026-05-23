@@ -9,18 +9,30 @@
 <body>
 
     <div class="app-container">
-        <h1>🏆 VUB - Tourney</h1>
+        <h1 id="main-title">🏆 Tournament Generator</h1>
         
-        <div id="setup-card" class="card">
-            <h2>Spelers Toevoegen</h2>
+        <div id="game-card" class="card">
+            <h2>Kies je Game</h2>
+            <p class="subtitle">Selecteer voor welke game je een toernooi start</p>
+            <div class="game-options">
+                <button class="game-btn polytopia" onclick="kiesGame('Polytopia')">👑 Polytopia Toernooi</button>
+                <button class="game-btn normal" onclick="kiesGame('Normaal')">⚔️ Normale Bracket</button>
+            </div>
+        </div>
+        
+        <div id="setup-card" class="card hidden">
+            <div class="card-header">
+                <h2>Spelers Toevoegen</h2>
+                <button class="back-btn" onclick="terugNaarMenu()">⬅ Menu</button>
+            </div>
             <p class="subtitle">Voer 3 tot 16 namen in (gescheiden door komma's)</p>
-            <textarea id="player-input" placeholder="Speler 1, Speler 2, Speler 3, Speler 4..."></textarea>
+            <textarea id="player-input" placeholder="Senne, Milan, Thomas, Ruben..."></textarea>
             <button id="start-btn" onclick="startTournament()">Start Toernooi</button>
         </div>
 
         <div id="bracket-card" class="card hidden">
             <div class="bracket-header">
-                <h2>Toernooi Schema</h2>
+                <h2 id="bracket-title">Toernooi Schema</h2>
                 <button class="reset-btn" onclick="resetTournament()">Nieuw Toernooi</button>
             </div>
             <div id="rounds-container" class="rounds-container"></div>
@@ -35,7 +47,7 @@
                 <span class="big-crown">👑</span>
                 <h1 id="champion-name">NAAM</h1>
             </div>
-            <p>Gefeliciteerd! Jij hebt deze Tourney gewonnen!</p>
+            <p id="winner-text">Gefeliciteerd! Jij bent de absolute koning van het toernooi.</p>
             <button class="celebrate-btn" onclick="sluitWinnaarPopup()">Bekijk Bracket</button>
             <button class="restart-btn" onclick="resetTournament()">Nieuw Toernooi</button>
         </div>
