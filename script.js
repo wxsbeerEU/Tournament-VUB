@@ -2,27 +2,25 @@ let tournamentData = [];
 
 function startTournament() {
     const input = document.getElementById('player-input').value;
-    // Splits namen op komma's en haal spaties weg
     let players = input.split(',').map(name => name.trim()).filter(name => name !== "");
 
     if (players.length < 3 || players.length > 16) {
-        alert("Voer minimaal 3 en maximaal 16 spelers in!");
+        alert("Voer minimaal 3 and maximaal 16 spelers in!");
         return;
     }
 
-    // 1. Bereken de benodigde bracket-grootte (volgende macht van 2: 4, 8 of 16)
+    // 1. Bepaal de bracket-grootte (4, 8 of 16)
     let bracketSize = 4;
     if (players.length > 4 && players.length <= 8) bracketSize = 8;
     if (players.length > 8 && players.length <= 16) bracketSize = 16;
 
-    // 2. Shuffle de echte spelers (Random volgorde)
+    // 2. Hussel de echte spelers door elkaar
     players.sort(() => Math.random() - 0.5);
 
-    // 3. Bereken het aantal rondes
+    // 3. Bouw de lege toernooi-structuur
     let totalRounds = Math.log2(bracketSize);
     tournamentData = [];
 
-    // Bouw de lege structuur voor alle rondes op
     for (let r = 0; r < totalRounds; r++) {
         let matchCount = bracketSize / Math.pow(2, r + 1);
         let roundMatches = [];
@@ -32,27 +30,40 @@ function startTournament() {
         tournamentData.push(roundMatches);
     }
 
-    // 4. Vul de allereerste ronde in met spelers en vul aan met "Free Pass 🌟"
+    // 4. Deel de eerste ronde in. Echte spelers eerst, vul aan met Free Passes.
     let playerIndex = 0;
     for (let i = 0; i < bracketSize; i += 2) {
         let matchIndex = i / 2;
-        
-        // Verdeel de echte spelers of geef een Free Pass als de spelers op zijn
         tournamentData[0][matchIndex].player1 = players[playerIndex] || "Free Pass 🌟";
         playerIndex++;
         tournamentData[0][matchIndex].player2 = players[playerIndex] || "Free Pass 🌟";
         playerIndex++;
+    }
 
-        // AUTOMATISCHE DOORSTROOM ALS ER EEN FREE PASS IS
-        // Als speler 2 een Free Pass is, wint speler 1 automatisch
-        if (tournamentData[0][matchIndex].player2 === "Free Pass 🌟" && tournamentData[0][matchIndex].player1 !== "Free Pass 🌟") {
-            tournamentData[0][matchIndex].winner = tournamentData[0][matchIndex].player1;
-            stuurDoorNaarVolgendeRonde(0, matchIndex, tournamentData[0][matchIndex].player1);
-        }
-        // Als speler 1 een Free Pass is (omdat je bv. heel weinig spelers hebt), wint speler 2 automatisch
-        else if (tournamentData[0][matchIndex].player1 === "Free Pass 🌟" && tournamentData[0][matchIndex].player2 !== "Free Pass 🌟") {
-            tournamentData[0][matchIndex].winner = tournamentData[0][matchIndex].player2;
-            stuurDoorNaarVolgendeRonde(0, matchIndex, tournamentData[0][matchIndex].player2);
+    // 5. AUTOMATISCHE DOORSTROOM LOOP
+    // We lopen door alle rondes heen om te kijken of er spelers automatisch door moeten vanwege Free Passes
+    for (let r = 0; r < totalRounds; r++) {
+        for (let m = 0; m < tournamentData[r].length; m++) {
+            let match = tournamentData[r][m];
+
+            // Als beide slots al gevuld zijn in deze ronde, check of er een Free Pass tussen zit
+            if (match.player1 && match.player2 && !match.winner) {
+                if (match.player1 === "Free Pass 🌟" && match.player2 === "Free Pass 🌟") {
+                    // Twee Free Passes tegen elkaar? Dan schuift de Free Pass door
+                    match.winner = "Free Pass 🌟";
+                    stuurDoorNaarVolgendeRonde(r, m, "Free Pass 🌟");
+                } 
+                else if (match.player2 === "Free Pass 🌟") {
+                    // Speler 1 heeft geluk en wint automatisch deze ronde
+                    match.winner = match.player1;
+                    stuurDoorNaarVolgendeRonde(r, m, match.player1);
+                } 
+                else if (match.player1 === "Free Pass 🌟") {
+                    // Speler 2 heeft geluk en wint automatisch deze ronde
+                    match.winner = match.player2;
+                    stuurDoorNaarVolgendeRonde(r, m, match.player2);
+                }
+            }
         }
     }
 
@@ -63,6 +74,19 @@ function startTournament() {
     renderBracket();
 }
 
+function stuurDoorNaarVolgendeRonde(roundIndex, matchIndex, winnerName) {
+    if (roundIndex < tournamentData.length - 1) {
+        const nextRoundIndex = roundIndex + 1;
+        const nextMatchIndex = Math.floor(matchIndex / 2);
+        
+        if (matchIndex % 2 === 0) {
+            tournamentData[nextRoundIndex][nextMatchIndex].player1 = winnerName;
+        } else {
+            tournamentData[nextRoundIndex][nextMatchIndex].player2 = winnerName;
+        }
+    }
+}
+
 function renderBracket() {
     const container = document.getElementById('rounds-container');
     container.innerHTML = '';
@@ -71,7 +95,6 @@ function renderBracket() {
         const roundDiv = document.createElement('div');
         roundDiv.classList.add('round');
 
-        // Dynamische titels voor de rondes
         let roundName = `Ronde ${roundIndex + 1}`;
         if (roundIndex === tournamentData.length - 1) roundName = "🏆 Finale";
         else if (roundIndex === tournamentData.length - 2) roundName = "Halve Finale";
@@ -86,6 +109,11 @@ function renderBracket() {
             const matchDiv = document.createElement('div');
             matchDiv.classList.add('match');
 
+            // Als een match bestaat uit twee Free Passes, verbergen we deze om het schema clean te houden
+            if (match.player1 === "Free Pass 🌟" && match.player2 === "Free Pass 🌟") {
+                return; 
+            }
+
             const p1Slot = createPlayerSlot(match.player1, match.winner, () => selectWinner(roundIndex, matchIndex, match.player1));
             const p2Slot = createPlayerSlot(match.player2, match.winner, () => selectWinner(roundIndex, matchIndex, match.player2));
 
@@ -94,7 +122,10 @@ function renderBracket() {
             roundDiv.appendChild(matchDiv);
         });
 
-        container.appendChild(roundDiv);
+        // Voeg de ronde alleen toe als er zichtbare wedstrijden in zitten
+        if (roundDiv.children.length > 1) {
+            container.appendChild(roundDiv);
+        }
     });
 }
 
@@ -103,9 +134,9 @@ function createPlayerSlot(playerName, winnerName, clickEvent) {
     slot.classList.add('player-slot');
     slot.innerText = playerName || "Nog onbekend";
 
-    // Als het een Free Pass is, geef het een aparte styling/layout
     if (playerName === "Free Pass 🌟") {
-        slot.classList.add('loser'); // Maakt het een beetje lichter/minder opvallend
+        slot.classList.add('loser');
+        slot.innerText = "Vrijstelling (Free Pass) 🌟";
         return slot;
     }
 
@@ -118,7 +149,6 @@ function createPlayerSlot(playerName, winnerName, clickEvent) {
         }
     }
 
-    // Alleen klikbaar als de speler bekend is, geen Free Pass is en er nog geen winnaar is
     if (playerName && !winnerName && playerName !== "Nog onbekend") {
         slot.onclick = clickEvent;
     }
@@ -127,34 +157,27 @@ function createPlayerSlot(playerName, winnerName, clickEvent) {
 }
 
 function selectWinner(roundIndex, matchIndex, winnerName) {
-    // Handmatige klik op een winnaar
     tournamentData[roundIndex][matchIndex].winner = winnerName;
     stuurDoorNaarVolgendeRonde(roundIndex, matchIndex, winnerName);
-    renderBracket();
-}
 
-function stuurDoorNaarVolgendeRonde(roundIndex, matchIndex, winnerName) {
-    // Als dit NIET de finale was, stuur de winnaar door
-    if (roundIndex < tournamentData.length - 1) {
-        const nextRoundIndex = roundIndex + 1;
-        const nextMatchIndex = Math.floor(matchIndex / 2);
-        
-        if (matchIndex % 2 === 0) {
-            tournamentData[nextRoundIndex][nextMatchIndex].player1 = winnerName;
-        } else {
-            tournamentData[nextRoundIndex][nextMatchIndex].player2 = winnerName;
-        }
-
-        // EXTRA CHECK: Als de winnaar in de VOLGENDE ronde tegen een "Free Pass 🌟" moet (gebeurt bij specifieke aantallen), stroomt hij nóg een ronde door
-        let volgendeMatch = tournamentData[nextRoundIndex][nextMatchIndex];
-        if (volgendeMatch.player1 && volgendeMatch.player2) {
-            if (volgendeMatch.player1 === "Free Pass 🌟" || volgendeMatch.player2 === "Free Pass 🌟") {
-                let echteWinnaar = volgendeMatch.player1 === "Free Pass 🌟" ? volgendeMatch.player2 : volgendeMatch.player1;
-                volgendeMatch.winner = echteWinnaar;
-                stuurDoorNaarVolgendeRonde(nextRoundIndex, nextMatchIndex, echteWinnaar);
+    // Na een handmatige klik, checken we opnieuw of de winnaar in de volgende ronde nu tegen een Free Pass botst
+    let totalRounds = tournamentData.length;
+    for (let r = roundIndex; r < totalRounds; r++) {
+        for (let m = 0; m < tournamentData[r].length; m++) {
+            let match = tournamentData[r][m];
+            if (match.player1 && match.player2 && !match.winner) {
+                if (match.player1 === "Free Pass 🌟") {
+                    match.winner = match.player2;
+                    stuurDoorNaarVolgendeRonde(r, m, match.player2);
+                } else if (match.player2 === "Free Pass 🌟") {
+                    match.winner = match.player1;
+                    stuurDoorNaarVolgendeRonde(r, m, match.player1);
+                }
             }
         }
     }
+
+    renderBracket();
 }
 
 function resetTournament() {
