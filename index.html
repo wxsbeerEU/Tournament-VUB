@@ -23,11 +23,20 @@
         
         <div id="setup-card" class="card hidden">
             <div class="card-header">
-                <h2>Spelers Toevoegen</h2>
+                <h2>Spelers Selecteren</h2>
                 <button class="back-btn" onclick="terugNaarMenu()">⬅ Menu</button>
             </div>
-            <p class="subtitle">Voer 3 tot 16 namen in (gescheiden door komma's)</p>
-            <textarea id="player-input" placeholder="Senne, Milan, Thomas, Ruben..."></textarea>
+            <p class="subtitle">Klik op je vrienden of voeg anderen toe (3-16 spelers)</p>
+            
+            <div id="friends-container" class="friends-grid"></div>
+
+            <div class="custom-add-container">
+                <input type="text" id="custom-player-input" placeholder="Andere naam toevoegen...">
+                <button class="add-btn" onclick="voegExtraSpelerToe()">+</button>
+            </div>
+
+            <p class="player-count-text">Geselecteerd: <strong id="speler-teller">0</strong></p>
+
             <button id="start-btn" onclick="startTournament()">Start Toernooi</button>
         </div>
 
@@ -54,6 +63,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=12"></script>
+    <script src="script.js?v=13"></script>
 </body>
 </html>
