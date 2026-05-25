@@ -352,38 +352,61 @@ button:hover { filter: brightness(1.08); }
 .crown { font-size: 1.1rem; }
 
 /* NIEUW: De Best-Of-3 Mini Tracker Knopjes rechts in het speler-balkje */
+/* GEÏNTEGREERDE BO3 TRACKER BALK */
 .bo3-dot-container {
     display: flex;
-    gap: 6px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-left: 12px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .bo3-dot {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: #0f172a;
-    border: 1px solid #334155;
-    font-size: 0.65rem;
+    padding: 10px 14px; /* Groter klikoppervlak */
+    font-size: 0.75rem;
     font-weight: 800;
-    color: #475569;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+    color: #64748b;
+    text-align: center;
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    min-width: 38px;
+    box-sizing: border-box;
 }
 
+.bo3-dot:last-child {
+    border-right: none; /* Geen divider bij de laatste knop */
+}
+
+/* Hover over een individuele game */
 .bo3-dot:hover {
-    border-color: #4f46e5;
-    color: #a5b4fc;
+    background: rgba(255, 255, 255, 0.03);
+    color: #94a3b8;
 }
 
-/* Geselecteerde/gewonnen game stip-stijl */
+/* Wanneer een game gewonnen is (Aangevinkt) */
 .bo3-dot.checked {
-    background: #10b981;
-    border-color: #34d399;
-    color: #0f172a;
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #042f1a;
+    font-weight: 900;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 
+                0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Animatie als je een game activeert */
+.bo3-dot.checked {
+    animation: pulseCheck 0.2s ease-out;
+}
+
+@keyframes pulseCheck {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 /* Polytopia BO3 Kaartje (Bovenin de Match) */
