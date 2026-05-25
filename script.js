@@ -92,7 +92,7 @@ function terugNaarMenu() {
 }
 
 function getRandomItem(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
+    return arr[Math.floor(Math.random() - 0.5)];
 }
 
 function genereerUniekePolytopiaBo3() {
@@ -140,7 +140,10 @@ function startTournament() {
                 score1: "", 
                 score2: "", 
                 winner: null, 
-                bo3: bo3Data 
+                bo3: bo3Data,
+                // NIEUW: Houdt individuele winst per game (1, 2, 3) bij voor Best Of 3
+                p1Games: [false, false, false],
+                p2Games: [false, false, false]
             });
         }
         tournamentData.push(roundMatches);
@@ -209,8 +212,9 @@ function stuurDoorNaarVolgendeRonde(roundIndex, matchIndex, winnerName) {
     }
 }
 
+// Wordt aangeroepen bij een normale klik op een speler (buiten BO3 om)
 function selectWinner(roundIndex, matchIndex, winnerName) {
-    if (gekozenGame === "Rollo Rush") return; 
+    if (gekozenGame === "Rollo Rush" || gekozenGame === "Polytopia") return; 
 
     let oudeWinnaar = tournamentData[roundIndex][matchIndex].winner;
     tournamentData[roundIndex][matchIndex].winner = winnerName;
@@ -224,6 +228,48 @@ function selectWinner(roundIndex, matchIndex, winnerName) {
 
     if (roundIndex === tournamentData.length - 1 && winnerName && winnerName !== "Free Pass 🌟") {
         toonWinnaarPopup(winnerName);
+    }
+}
+
+// NIEUW: Verwerkt het individueel aanklikken van de sub-games binnen een BO3
+function selectBo3GameWinner(roundIndex, matchIndex, playerNum, gameIdx) {
+    let match = tournamentData[roundIndex][matchIndex];
+    let oudeWinnaar = match.winner;
+
+    if (playerNum === 1) {
+        match.p1Games[gameIdx] = !match.p1Games[gameIdx];
+        if (match.p1Games[gameIdx]) match.p2Games[gameIdx] = false; // Tegenstander verliest die game automatisch
+    } else {
+        match.p2Games[gameIdx] = !match.p2Games[gameIdx];
+        if (match.p2Games[gameIdx]) match.p1Games[gameIdx] = false; // Tegenstander verliest die game automatisch
+    }
+
+    // Tel wins
+    let p1Wins = match.p1Games.filter(Boolean).length;
+    let p2Wins = match.p2Games.filter(Boolean).length;
+
+    // Wie het eerst 2 wins haalt wint de match
+    if (p1Wins >= 2) {
+        match.winner = match.player1;
+    } else if (p2Wins >= 2) {
+        match.winner = match.player2;
+    } else {
+        match.winner = null;
+    }
+
+    if (oudeWinnaar && oudeWinnaar !== match.winner) {
+        wisOudeWinnaarInVolgendeRondes(roundIndex + 1, oudeWinnaar);
+    }
+
+    berekenToernooiLogica();
+    renderBracket();
+
+    if (roundIndex === tournamentData.length - 1 && match.winner && match.winner !== "Free Pass 🌟" && !oudeWinnaar) {
+        setTimeout(() => {
+            if (tournamentData[roundIndex][matchIndex].winner === match.winner) {
+                toonWinnaarPopup(match.winner);
+            }
+        }, 400);
     }
 }
 
@@ -298,8 +344,8 @@ function wisOudeWinnaarInVolgendeRondes(startRound, naamOmTeWissen) {
     for (let r = startRound; r < tournamentData.length; r++) {
         for (let m = 0; m < tournamentData[r].length; m++) {
             let match = tournamentData[r][m];
-            if (match.player1 === naamOmTeWissen) { match.player1 = null; match.winner = null; match.score1 = ""; match.score2 = ""; }
-            if (match.player2 === naamOmTeWissen) { match.player2 = null; match.winner = null; match.score1 = ""; match.score2 = ""; }
+            if (match.player1 === naamOmTeWissen) { match.player1 = null; match.winner = null; match.score1 = ""; match.score2 = ""; match.p1Games = [false,false,false]; match.p2Games = [false,false,false]; }
+            if (match.player2 === naamOmTeWissen) { match.player2 = null; match.winner = null; match.score1 = ""; match.score2 = ""; match.p1Games = [false,false,false]; match.p2Games = [false,false,false]; }
             if (match.winner === naamOmTeWissen) { match.winner = null; }
         }
     }
@@ -351,21 +397,21 @@ function renderBracket() {
                 matchDiv.appendChild(bo3Box);
             }
 
-            const p1Slot = createPlayerSlot(match.player1, match.winner, () => selectWinner(roundIndex, matchIndex, match.player1), roundIndex, matchIndex, 1, match.score1);
-            const p2Slot = createPlayerSlot(match.player2, match.winner, () => selectWinner(roundIndex, matchIndex, match.player2), roundIndex, matchIndex, 2, match.score2);
+            const p1Slot = createPlayerSlot(match, match.player1, match.winner, () => selectWinner(roundIndex, matchIndex, match.player1), roundIndex, matchIndex, 1, match.score1);
+            const p2Slot = createPlayerSlot(match, match.player2, match.winner, () => selectWinner(roundIndex, matchIndex, match.player2), roundIndex, matchIndex, 2, match.score2);
 
             matchDiv.appendChild(p1Slot);
             matchDiv.appendChild(p2Slot);
             roundDiv.appendChild(matchDiv);
         });
 
-        if (roundDiv.children.length > 1) {
+        if (roundDiv.children.length > 0) {
             container.appendChild(roundDiv);
         }
     });
 }
 
-function createPlayerSlot(playerName, winnerName, clickEvent, roundIndex, matchIndex, playerNum, scoreValue) {
+function createPlayerSlot(match, playerName, winnerName, clickEvent, roundIndex, matchIndex, playerNum, scoreValue) {
     const slot = document.createElement('div');
     slot.classList.add('player-slot');
 
@@ -388,6 +434,7 @@ function createPlayerSlot(playerName, winnerName, clickEvent, roundIndex, matchI
         }
     }
 
+    // VOOR ROLLO RUSH MODE: Score inputs tonen
     if (gekozenGame === "Rollo Rush" && playerName && playerName !== "Nog onbekend") {
         const scoreInput = document.createElement('input');
         scoreInput.type = "number";
@@ -400,7 +447,33 @@ function createPlayerSlot(playerName, winnerName, clickEvent, roundIndex, matchI
         scoreInput.oninput = (e) => updateScore(roundIndex, matchIndex, playerNum, e.target.value);
         
         slot.appendChild(scoreInput);
-    } else if (gekozenGame !== "Rollo Rush" && playerName && playerName !== "Nog onbekend") {
+    } 
+    // VOOR POLYTOPIA MODE: Best of 3 sub-ronde verdeling knopjes toevoegen
+    else if (gekozenGame === "Polytopia" && playerName && playerName !== "Nog onbekend" && match.player1 && match.player2 && match.player1 !== "Free Pass 🌟" && match.player2 !== "Free Pass 🌟") {
+        const dotContainer = document.createElement('div');
+        dotContainer.classList.add('bo3-dot-container');
+
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('bo3-dot');
+            dot.innerText = `G${i+1}`;
+            
+            // Controleer of deze game als gewonnen staat aangevinkt
+            let isChecked = (playerNum === 1) ? match.p1Games[i] : match.p2Games[i];
+            if (isChecked) {
+                dot.classList.add('checked');
+            }
+
+            dot.onclick = (e) => {
+                e.stopPropagation(); // Voorkomt dat de hele balk getriggerd wordt
+                selectBo3GameWinner(roundIndex, matchIndex, playerNum, i);
+            };
+            dotContainer.appendChild(dot);
+        }
+        slot.appendChild(dotContainer);
+    } 
+    // STANDAARD TOERNOOI KLIKBAARHEID
+    else if (gekozenGame !== "Rollo Rush" && gekozenGame !== "Polytopia" && playerName && playerName !== "Nog onbekend") {
         slot.onclick = clickEvent;
     }
 
