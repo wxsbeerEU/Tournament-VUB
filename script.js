@@ -1,21 +1,87 @@
 let tournamentData = [];
 let gekozenGame = "Normaal";
 
+// PAS DEZE LIJST AAN NAAR JOUW VRIENDEN
+const VRIENDENGROEP = ["Lennart", "Paul-David", "Daniël", "Nino", "Renzo", "Remi", "Jawad"]; 
+let geselecteerdeSpelers = new Set();
+
 const POLYTOPIA_MANNETJES = ["Xin-Xi", "Imperius", "Bardur", "Oumaji"];
 const POLYTOPIA_MAPS = ["Dryland", "Lake", "Continents", "Pangea", "Archipelago", "Water World"];
+
+function laadVriendenKnoppen() {
+    const container = document.getElementById('friends-container');
+    container.innerHTML = '';
+    geselecteerdeSpelers.clear();
+    updateSpelerTeller();
+
+    VRIENDENGROEP.forEach(naam => {
+        const btn = document.createElement('button');
+        btn.classList.add('friend-btn');
+        btn.innerText = naam;
+        btn.onclick = () => toggleSpeler(naam, btn);
+        container.appendChild(btn);
+    });
+}
+
+function toggleSpeler(naam, btnElement) {
+    if (geselecteerdeSpelers.has(naam)) {
+        geselecteerdeSpelers.delete(naam);
+        btnElement.classList.remove('selected');
+    } else {
+        if (geselecteerdeSpelers.size >= 16) {
+            alert("Je kunt maximaal 16 spelers toevoegen!");
+            return;
+        }
+        geselecteerdeSpelers.add(naam);
+        btnElement.classList.add('selected');
+    }
+    updateSpelerTeller();
+}
+
+function voegExtraSpelerToe() {
+    const input = document.getElementById('custom-player-input');
+    const naam = input.value.trim();
+    
+    if (naam && !geselecteerdeSpelers.has(naam)) {
+        if (geselecteerdeSpelers.size >= 16) {
+            alert("Je kunt maximaal 16 spelers toevoegen!");
+            return;
+        }
+        
+        const container = document.getElementById('friends-container');
+        const btn = document.createElement('button');
+        btn.classList.add('friend-btn', 'selected');
+        btn.innerText = naam;
+        btn.onclick = () => toggleSpeler(naam, btn);
+        container.appendChild(btn);
+        
+        geselecteerdeSpelers.add(naam);
+        input.value = '';
+        updateSpelerTeller();
+    } else if (geselecteerdeSpelers.has(naam)) {
+        alert("Deze speler is al toegevoegd!");
+    }
+}
+
+function updateSpelerTeller() {
+    document.getElementById('speler-teller').innerText = geselecteerdeSpelers.size;
+}
 
 function kiesGame(game) {
     gekozenGame = game;
     if (gekozenGame === "Polytopia") {
         document.getElementById('main-title').innerText = "👑 Polytopia Tournament";
-        document.getElementById('player-input').placeholder = "Speler 1, Speler 2, Speler 3, Speler 4...";
     } else if (gekozenGame === "Rollo Rush") {
         document.getElementById('main-title').innerText = "🦔 Rollo Rush Arena";
-        document.getElementById('player-input').placeholder = "Speler 1, Speler 2, Speler 3, Speler 4...";
     } else {
         document.getElementById('main-title').innerText = "🏆 Tournament Generator";
-        document.getElementById('player-input').placeholder = "Speler 1, Speler 2, Speler 3, Speler 4...";
     }
+    
+    // Laad de vrienden in zodra een game wordt gekozen
+    if (document.getElementById('friends-container').innerHTML === "") {
+        laadVriendenKnoppen();
+    }
+
     document.getElementById('game-card').classList.add('hidden');
     document.getElementById('setup-card').classList.remove('hidden');
 }
@@ -48,11 +114,10 @@ function genereerUniekePolytopiaBo3() {
 }
 
 function startTournament() {
-    const input = document.getElementById('player-input').value;
-    let players = input.split(',').map(name => name.trim()).filter(name => name !== "");
+    let players = Array.from(geselecteerdeSpelers);
 
     if (players.length < 3 || players.length > 16) {
-        alert("Voer minimaal 3 en maximaal 16 spelers in!");
+        alert("Selecteer minimaal 3 en maximaal 16 spelers!");
         return;
     }
 
@@ -345,7 +410,10 @@ function createPlayerSlot(playerName, winnerName, clickEvent, roundIndex, matchI
 
 function resetTournament() {
     sluitWinnaarPopup();
-    document.getElementById('player-input').value = '';
+    
+    laadVriendenKnoppen(); 
+    document.getElementById('custom-player-input').value = '';
+
     document.getElementById('bracket-card').classList.add('hidden');
     document.getElementById('setup-card').classList.add('hidden');
     document.getElementById('game-card').classList.remove('hidden');
