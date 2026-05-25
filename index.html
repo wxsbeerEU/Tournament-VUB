@@ -9,19 +9,43 @@
 <body>
 
     <div class="app-container">
-        <h1 id="main-title">🏆 Tournament Generator</h1>
+        <header class="main-header">
+            <h1 id="main-title">Tournament Generator</h1>
+            <div class="header-glow"></div>
+        </header>
         
-        <div id="game-card" class="card">
+        <div id="game-card" class="card fade-in">
             <h2>Kies je Game</h2>
-            <p class="subtitle">Selecteer voor welke game je een toernooi start</p>
+            <p class="subtitle">Selecteer de modus voor je toernooi</p>
+            
             <div class="game-options">
-                <button class="game-btn polytopia" onclick="kiesGame('Polytopia')">👑 Polytopia Toernooi</button>
-                <button class="game-btn rollorush" onclick="kiesGame('Rollo Rush')">🦔 Rollo Rush Mode</button>
-                <button class="game-btn normal" onclick="kiesGame('Normaal')">⚔️ Normale Bracket</button>
+                <button class="game-btn polytopia" onclick="kiesGame('Polytopia')">
+                    <span class="game-icon">👑</span>
+                    <div class="game-btn-text">
+                        <span class="game-name">Polytopia Toernooi</span>
+                        <span class="game-desc">Best of 3 • Willekeurige tribes & maps</span>
+                    </div>
+                </button>
+                
+                <button class="game-btn rollorush" onclick="kiesGame('Rollo Rush')">
+                    <span class="game-icon">🦔</span>
+                    <div class="game-btn-text">
+                        <span class="game-name">Rollo Rush Mode</span>
+                        <span class="game-desc">Scorebord • Wie rolt de verste afstand?</span>
+                    </div>
+                </button>
+                
+                <button class="game-btn normal" onclick="kiesGame('Normaal')">
+                    <span class="game-icon">⚔️</span>
+                    <div class="game-btn-text">
+                        <span class="game-name">Normale Bracket</span>
+                        <span class="game-desc">Klassiek • Directe uitschakeling</span>
+                    </div>
+                </button>
             </div>
         </div>
         
-        <div id="setup-card" class="card hidden">
+        <div id="setup-card" class="card hidden fade-in">
             <div class="card-header">
                 <h2>Spelers Selecteren</h2>
                 <button class="back-btn" onclick="terugNaarMenu()">⬅ Menu</button>
@@ -37,10 +61,10 @@
 
             <p class="player-count-text">Geselecteerd: <strong id="speler-teller">0</strong></p>
 
-            <button id="start-btn" onclick="startTournament()">Start Toernooi</button>
+            <button id="start-btn" class="primary-btn" onclick="startTournament()">Start Toernooi</button>
         </div>
 
-        <div id="bracket-card" class="card hidden">
+        <div id="bracket-card" class="card hidden fade-in">
             <div class="bracket-header">
                 <h2 id="bracket-title">Toernooi Schema</h2>
                 <button class="reset-btn" onclick="resetTournament()">Nieuw Toernooi</button>
@@ -63,6 +87,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=13"></script>
+    <script src="script.js?v=14"></script>
 </body>
 </html>
