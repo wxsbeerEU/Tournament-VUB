@@ -74,10 +74,9 @@ function kiesGame(game) {
     } else if (gekozenGame === "Rollo Rush") {
         document.getElementById('main-title').innerText = "🦔 Rollo Rush Arena";
     } else {
-        document.getElementById('main-title').innerText = "🏆 Tournament Generator";
+        document.getElementById('main-title').innerText = "Tournament Generator";
     }
     
-    // Laad de vrienden in zodra een game wordt gekozen
     if (document.getElementById('friends-container').innerHTML === "") {
         laadVriendenKnoppen();
     }
@@ -87,7 +86,7 @@ function kiesGame(game) {
 }
 
 function terugNaarMenu() {
-    document.getElementById('main-title').innerText = "🏆 Tournament Generator";
+    document.getElementById('main-title').innerText = "Tournament Generator";
     document.getElementById('game-card').classList.remove('hidden');
     document.getElementById('setup-card').classList.add('hidden');
 }
@@ -417,5 +416,5 @@ function resetTournament() {
     document.getElementById('bracket-card').classList.add('hidden');
     document.getElementById('setup-card').classList.add('hidden');
     document.getElementById('game-card').classList.remove('hidden');
-    document.getElementById('main-title').innerText = "🏆 Tournament Generator";
+    document.getElementById('main-title').innerText = "Tournament Generator";
 }
