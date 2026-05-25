@@ -109,20 +109,6 @@ h1 {
     border: 1px solid #64748b;
 }
 
-textarea {
-    width: 100%;
-    height: 90px;
-    background: #0f172a;
-    border: 1px solid #475569;
-    border-radius: 10px;
-    color: white;
-    padding: 12px;
-    font-size: 1rem;
-    resize: none;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-}
-
 button {
     width: 100%;
     background: var(--accent-gradient);
@@ -328,3 +314,77 @@ button:active { transform: scale(0.98); }
 #champion-name { margin: 10px 0 0 0; font-size: 2.2rem; color: white; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
 .celebrate-btn { background: #475569; margin-top: 20px; }
 .restart-btn { background: var(--accent-gradient); margin-top: 10px; }
+
+/* Styling voor de speler-selectie knoppen */
+.friends-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.friend-btn {
+    width: auto;
+    margin: 0;
+    background: #334155;
+    border: 2px solid transparent;
+    color: var(--text-main);
+    padding: 10px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.friend-btn:hover {
+    background: #475569;
+}
+
+/* Actieve (geselecteerde) staat */
+.friend-btn.selected {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--winner-color);
+    color: var(--winner-color);
+}
+
+.custom-add-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.custom-add-container input {
+    flex-grow: 1;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.custom-add-container input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+.custom-add-container .add-btn {
+    width: auto;
+    margin: 0;
+    padding: 0 20px;
+    background: #475569;
+    font-size: 1.5rem;
+}
+
+.player-count-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+#speler-teller {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+}
